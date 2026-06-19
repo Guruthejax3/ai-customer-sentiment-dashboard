@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Papa from "papaparse";
 import { 
   BarChart3, Database, Zap, Cpu, Terminal, Workflow, 
   Smile, Meh, Frown, Activity, RefreshCw 
@@ -27,6 +28,31 @@ export default function DashboardPage() {
   const [database, setDatabase] = useState<DatabaseRecord[]>(INITIAL_RECORDS);
   const [inputText, setInputText] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [csvData, setCsvData] = useState<any[]>([]);
+  const [rowCount, setRowCount] = useState(0);
+
+const handleFileUpload = (
+  event: React.ChangeEvent<HTMLInputElement>
+) => {
+  const file = event.target.files?.[0];
+
+  if (!file) return;
+
+  setUploadedFile(file);
+
+  Papa.parse(file, {
+    header: true,
+    skipEmptyLines: true,
+
+    complete: (results) => {
+      setCsvData(results.data as any[]);
+      setRowCount(results.data.length);
+
+      console.log(results.data);
+    }
+  });
+};
   
   // Pipeline Progress States
   const [activeStep, setActiveStep] = useState<number>(0);
@@ -134,12 +160,12 @@ export default function DashboardPage() {
             </div>
             <div>
               <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-                BERT Sentiment Dashboard
-                <span className="text-[10px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2 py-0.5 rounded-md font-semibold tracking-normal">v1.2-beta</span>
+                SentimentIQ
+                <span className="text-[10px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2 py-0.5 rounded-md font-semibold tracking-normal">Enterprise Dashboard</span>
               </h1>
               <p className="text-xs text-slate-400 flex items-center gap-1.5 mt-0.5">
                 <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                Inference Node Status: <span className="text-slate-300 font-medium">Online (PyTorch Backend)</span>
+                AI Analysis Engine: <span className="text-slate-300 font-medium">Online (PyTorch Backend)</span>
               </p>
             </div>
           </div>
@@ -168,12 +194,70 @@ export default function DashboardPage() {
           <div className="glass-panel p-6 rounded-2xl glow-indigo flex flex-col gap-4">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <h2 className="font-bold text-white flex items-center gap-2 text-sm uppercase tracking-wider">
-                <Terminal className="w-4 h-4 text-indigo-400" /> Real-Time NLP Sandbox
+                <Terminal className="w-4 h-4 text-indigo-400" /> Customer Feedback Analysis
               </h2>
               <span className="text-[11px] bg-indigo-500/10 text-indigo-400 font-semibold px-2.5 py-0.5 rounded-full border border-indigo-500/20">
                 Playground
               </span>
             </div>
+            <div className="flex flex-col gap-2 mb-4">
+  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+    Upload Customer Feedback Dataset
+  </label>
+
+  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-700 rounded-xl cursor-pointer bg-[#0a0f1d] hover:border-indigo-500 hover:bg-[#10192f] transition-all duration-300">
+
+  <div className="flex flex-col items-center justify-center">
+    <span className="text-3xl mb-2">📂</span>
+
+    <p className="text-sm font-medium text-slate-300">
+      Click to Upload CSV
+    </p>
+
+    <p className="text-xs text-slate-500 mt-1">
+      Reviews • Surveys • Support Tickets
+    </p>
+  </div>
+
+  <input
+    type="file"
+    accept=".csv"
+    onChange={handleFileUpload}
+    className="hidden"
+  />
+</label>
+
+  {uploadedFile && (
+  <div className="mt-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3">
+    
+    <p className="text-emerald-400 text-sm font-medium">
+      ✅ {uploadedFile.name}
+    </p>
+
+    <div className="mt-2 text-xs text-slate-300">
+      Rows Loaded: {rowCount}
+    </div>
+
+  </div>
+)}
+{csvData.length > 0 && (
+  <div className="mt-4 bg-[#0a0f1d] border border-slate-800 rounded-xl p-3">
+    
+    <h3 className="text-sm font-semibold text-white mb-3">
+      Dataset Preview
+    </h3>
+
+    <div className="space-y-2 text-xs text-slate-300 max-h-40 overflow-y-auto">
+      {csvData.slice(0, 5).map((row, index) => (
+        <div key={index}>
+          {JSON.stringify(row)}
+        </div>
+      ))}
+    </div>
+
+  </div>
+)}
+</div>
 
             <div className="flex flex-col gap-1.5">
               <label htmlFor="feedback" className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
@@ -184,7 +268,7 @@ export default function DashboardPage() {
                 rows={4}
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
-                placeholder="Type customer review here (e.g., 'Amazing support team, resolved my problem in minutes!')"
+                placeholder="Paste customer feedback, survey response, support ticket, product review, or app feedback here..."
                 className="w-full bg-[#0a0f1d] text-sm text-slate-200 p-3 border border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500/40 transition-all resize-none placeholder-slate-600"
               />
             </div>
@@ -195,7 +279,7 @@ export default function DashboardPage() {
               className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-500 text-white font-medium py-3 px-4 rounded-xl transition-all shadow-lg shadow-indigo-600/10 flex items-center justify-center gap-2 text-sm"
             >
               <Cpu className="w-4 h-4" />
-              <span>{isAnalyzing ? "Processing Tokens..." : "Run BERT Inference"}</span>
+              <span>{isAnalyzing ? "Processing Tokens..." : "Analyze Feedback"}</span>
             </button>
           </div>
 
@@ -203,7 +287,7 @@ export default function DashboardPage() {
           <div className="glass-panel p-6 rounded-2xl flex flex-col gap-4 flex-grow">
             <div className="border-b border-slate-800 pb-3">
               <h2 className="font-bold text-white flex items-center gap-2 text-sm uppercase tracking-wider">
-                <Workflow className="w-4 h-4 text-slate-400" /> BERT Pipeline Trace
+                <Workflow className="w-4 h-4 text-slate-400" /> Issue Detection Engine
               </h2>
             </div>
 
@@ -429,6 +513,19 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
+          <div className="glass-panel p-5 rounded-2xl">
+  <h3 className="font-bold text-white text-sm mb-4">
+     Executive Summary
+  </h3>
+
+  <div className="space-y-2 text-slate-300 text-sm">
+    <p>• Customer satisfaction is currently stable.</p>
+    <p>• Most feedback is positive.</p>
+    <p>• Delivery-related issues are the most common complaint.</p>
+    <p>• Customer support receives favorable ratings.</p>
+    <p>• Further analysis recommended on recurring negative feedback.</p>
+  </div>
+</div>
 
           {/* SQL Mirrored Logs Table */}
           <div className="glass-panel rounded-2xl overflow-hidden flex flex-col">
@@ -448,7 +545,7 @@ export default function DashboardPage() {
                   <tr>
                     <th className="p-4 pl-6">ID</th>
                     <th className="p-4">Customer Review</th>
-                    <th className="p-4 text-center">BERT Classification</th>
+                    <th className="p-4 text-center">Sentiment</th>
                     <th className="p-4 text-right pr-6">Confidence</th>
                   </tr>
                 </thead>
@@ -491,7 +588,7 @@ export default function DashboardPage() {
       {/* Page Footer */}
       <footer className="bg-[#060a13] text-slate-500 border-t border-slate-900 py-6 mt-12 text-center text-xs">
         <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p>© 2026 Sentiment API System — Interactive College Project Build.</p>
+          <p>© 2026 SentimentIQ — Customer Feedback Intelligence Platform</p>
           <div className="flex gap-4 font-mono text-[10px]">
             <span className="hover:text-slate-300 transition-colors cursor-pointer">PyTorch Docs</span>
             <span className="hover:text-slate-300 transition-colors cursor-pointer">Postgres Sandbox</span>
