@@ -1,19 +1,43 @@
 import type { Metadata } from "next";
+import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+});
+
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-jakarta",
+});
+
 export const metadata: Metadata = {
-  title: "AI Customer Sentiment Analysis Dashboard",
-  description: "BERT-powered real-time customer sentiment tracking pipeline",
+  title: "SentimentIQ — Enterprise AI Analytics",
+  description: "Real-time customer sentiment intelligence powered by DistilBERT",
 };
 
 export default function RootLayout({
   children,
-}: {
-  children: React.ReactNode;
-}) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
-      <body className="min-h-screen flex flex-col">{children}</body>
+    <html lang="en" data-theme="dark" className={`${inter.variable} ${jakarta.variable}`}>
+      <head>
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            (function(){
+              try {
+                var t = localStorage.getItem('sentiq-theme') || 'dark';
+                document.documentElement.setAttribute('data-theme', t);
+              } catch(e){}
+            })();
+          `
+        }} />
+      </head>
+      <body className={inter.className}>
+        {children}
+      </body>
     </html>
   );
 }
